@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Cricket</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        .toss-screen {
+            text-align: center;
+        }
+
+        .toss-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.blue {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .btn.green {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        }
+
+        .btn.number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 20px;
+            padding: 0;
+            margin: 5px;
+        }
+
+        .scoreboard {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .team-score {
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .current-batsman {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .game-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .number-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .commentary {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .commentary-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #4ecdc4;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .result-screen {
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .final-scores {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .choice-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .choice-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .choice-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .vs {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .target-info {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+            
+            .game-title {
+                font-size: 2em;
+            }
+            
+            .scoreboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .choice-display {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .vs {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🏏 Hand Cricket</h1>
+        
+        <!-- Toss Screen -->
+        <div id="toss-screen" class="game-screen active">
+            <div class="toss-screen">
+                <h2>🎲 Time for Toss!</h2>
+                <p>Choose Odd or Even and pick a number (1-6)</p>
+                
+                <div class="toss-buttons">
+                    <button class="btn" onclick="selectOddEven('odd')">ODD</button>
+                    <button class="btn" onclick="selectOddEven('even')">EVEN</button>
+                </div>
+                
+                <div id="toss-numbers" style="display: none;">
+                    <p>Pick your number:</p>
+                    <div class="number-buttons">
+                        <button class="btn number" onclick="tossNumber(1)">1</button>
+                        <button class="btn number" onclick="tossNumber(2)">2</button>
+                        <button class="btn number" onclick="tossNumber(3)">3</button>
+                        <button class="btn number" onclick="tossNumber(4)">4</button>
+                        <button class="btn number" onclick="tossNumber(5)">5</button>
+                        <button class="btn number" onclick="tossNumber(6)">6</button>
+                    </div>
+                </div>
+                
+                <div id="toss-result"></div>
+            </div>
+        </div>
+
+        <!-- Bat or Bowl Selection -->
+        <div id="choice-screen" class="game-screen">
+            <div class="toss-screen">
+                <h2>🎯 You won the toss!</h2>
+                <p>What would you like to do?</p>
+                <div class="toss-buttons">
+                    <button class="btn blue" onclick="choiceMade('bat')">BAT FIRST</button>
+                    <button class="btn green" onclick="choiceMade('bowl')">BOWL FIRST</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Play Screen -->
+        <div id="game-screen" class="game-screen">
+            <div class="scoreboard">
+                <div class="team-score">
+                    <div class="team-name">👤 You</div>
+                    <div class="score" id="player-score">0/0</div>
+                </div>
+                <div class="team-score">
+                    <div class="team-name">🤖 CPU</div>
+                    <div class="score" id="cpu-score">0/0</div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <div id="game-status">First Innings - You are batting</div>
+                <div id="target-info" class="target-info" style="display: none;"></div>
+                <div>Overs: <span id="overs">0.0</span></div>
+            </div>
+
+            <div class="choice-display">
+                <div class="choice-item">
+                    <div>Your Choice</div>
+                    <div class="choice-number" id="player-choice">?</div>
+                </div>
+                <div class="vs">VS</div>
+                <div class="choice-item">
+                    <div>CPU Choice</div>
+                    <div class="choice-number" id="cpu-choice">?</div>
+                </div>
+            </div>
+
+            <div class="number-buttons">
+                <button class="btn number" onclick="playerChoice(1)">1</button>
+                <button class="btn number" onclick="playerChoice(2)">2</button>
+                <button class="btn number" onclick="playerChoice(3)">3</button>
+                <button class="btn number" onclick="playerChoice(4)">4</button>
+                <button class="btn number" onclick="playerChoice(5)">5</button>
+                <button class="btn number" onclick="playerChoice(6)">6</button>
+            </div>
+
+            <div class="commentary" id="commentary">
+                <div class="commentary-item">🏏 Game started! Play your first ball...</div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="game-screen">
+            <div class="result-screen">
+                <div class="result-title" id="result-title">🏆 Match Result</div>
+                <div class="final-scores" id="final-scores"></div>
+                <button class="btn blue" onclick="startNewGame()">🔄 Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            phase: 'toss', // toss, choice, innings1, innings2, result
+            tossChoice: null,
+            playerBatsFirst: false,
+            innings: 1,
+            currentBatsman: 'player',
+            playerScore: { runs: 0, wickets: 0 },
+            cpuScore: { runs: 0, wickets: 0 },
+            balls: 0,
+            target: 0,
+            playerChoices: [], // For AI learning
+            gameOver: false
+        };
+
+        // CPU AI patterns
+        let cpuAI = {
+            mode: 'smart', // 'simple' or 'smart'
+            playerPatterns: {},
+            lastChoices: [],
+            
+            getChoice(gameState) {
+                if (this.mode === 'simple') {
+                    return Math.floor(Math.random() * 6) + 1;
+                }
+                
+                // Smart AI logic
+                return this.getSmartChoice(gameState);
+            },
+            
+            getSmartChoice(gameState) {
+                const isChasing = gameState.innings === 2 && gameState.currentBatsman === 'cpu';
+                const runsNeeded = gameState.target - gameState.cpuScore.runs;
+                const ballsLeft = (10 * 6) - gameState.balls; // Assuming 10 overs max
+                
+                if (isChasing && ballsLeft <= 5) {
+                    // Desperate mode - go for high scores
+                    return Math.random() < 0.6 ? (Math.floor(Math.random() * 3) + 4) : (Math.floor(Math.random() * 6) + 1);
+                }
+                
+                if (isChasing && runsNeeded <= 10) {
+                    // Conservative chase - avoid getting out
+                    return Math.random() < 0.7 ? (Math.floor(Math.random() * 3) + 1) : (Math.floor(Math.random() * 6) + 1);
+                }
+                
+                // Analyze player patterns
+                if (gameState.playerChoices.length >= 3) {
+                    const recentChoices = gameState.playerChoices.slice(-3);
+                    const mostCommon = this.getMostCommonChoice(recentChoices);
+                    
+                    // When bowling, try to match player's common choice to get them out
+                    if (gameState.currentBatsman === 'player' && Math.random() < 0.4) {
+                        return mostCommon;
+                    }
+                    
+                    // When batting, avoid player's common bowling choice
+                    if (gameState.currentBatsman === 'cpu' && Math.random() < 0.3) {
+                        let avoid = mostCommon;
+                        let choice;
+                        do {
+                            choice = Math.floor(Math.random() * 6) + 1;
+                        } while (choice === avoid && Math.random() < 0.7);
+                        return choice;
+                    }
+                }
+                
+                // Default random with slight bias towards middle numbers
+                const weights = [0.15, 0.2, 0.25, 0.25, 0.2, 0.15]; // 1,2,3,4,5,6
+                const random = Math.random();
+                let sum = 0;
+                for (let i = 0; i < weights.length; i++) {
+                    sum += weights[i];
+                    if (random < sum) return i + 1;
+                }
+                return 4; // Default
+            },
+            
+            getMostCommonChoice(choices) {
+                const counts = {};
+                choices.forEach(choice => counts[choice] = (counts[choice] || 0) + 1);
+                return parseInt(Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b));
+            }
+        };
+
+        // Utility functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function addCommentary(text, isSpecial = false) {
+            const commentary = document.getElementById('commentary');
+            const item = document.createElement('div');
+            item.className = 'commentary-item';
+            if (isSpecial) item.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
+            item.innerHTML = text;
+            commentary.appendChild(item);
+            commentary.scrollTop = commentary.scrollHeight;
+        }
+
+        function updateScoreboard() {
+            document.getElementById('player-score').textContent = 
+                `${gameState.playerScore.runs}/${gameState.playerScore.wickets}`;
+            document.getElementById('cpu-score').textContent = 
+                `${gameState.cpuScore.runs}/${gameState.cpuScore.wickets}`;
+            
+            const overs = Math.floor(gameState.balls / 6);
+            const balls = gameState.balls % 6;
+            document.getElementById('overs').textContent = `${overs}.${balls}`;
+        }
+
+        function updateGameStatus() {
+            let status = '';
+            if (gameState.innings === 1) {
+                status = `First Innings - ${gameState.currentBatsman === 'player' ? 'You are' : 'CPU is'} batting`;
+            } else {
+                status = `Second Innings - ${gameState.currentBatsman === 'player' ? 'You are' : 'CPU is'} batting`;
+                const targetEl = document.getElementById('target-info');
+                const runsNeeded = gameState.target - (gameState.currentBatsman === 'player' ? gameState.playerScore.runs : gameState.cpuScore.runs);
+                targetEl.textContent = `Target: ${gameState.target} | Need: ${Math.max(0, runsNeeded)} runs`;
+                targetEl.style.display = 'block';
+            }
+            document.getElementById('game-status').textContent = status;
+        }
+
+        // Toss functions
+        function selectOddEven(choice) {
+            gameState.tossChoice = choice;
+            document.getElementById('toss-numbers').style.display = 'block';
+        }
+
+        function tossNumber(playerNum) {
+            const cpuNum = Math.floor(Math.random() * 6) + 1;
+            const sum = playerNum + cpuNum;
+            const isOdd = sum % 2 === 1;
+            const result = isOdd ? 'odd' : 'even';
+            
+            let resultText = `You chose: ${playerNum} | CPU chose: ${cpuNum} | Sum: ${sum} (${result})<br>`;
+            
+            if (result === gameState.tossChoice) {
+                resultText += "🎉 You won the toss!";
+                showScreen('choice-screen');
+            } else {
+                resultText += "😔 CPU won the toss!";
+                // CPU chooses randomly
+                gameState.playerBatsFirst = Math.random() < 0.5;
+                resultText += `<br>CPU chose to ${gameState.playerBatsFirst ? 'bowl first' : 'bat first'}`;
+                setTimeout(() => {
+                    startGame();
+                }, 2000);
+            }
+            
+            document.getElementById('toss-result').innerHTML = resultText;
+        }
+
+        function choiceMade(choice) {
+            gameState.playerBatsFirst = (choice === 'bat');
+            startGame();
+        }
+
+        function startGame() {
+            gameState.phase = 'innings1';
+            gameState.currentBatsman = gameState.playerBatsFirst ? 'player' : 'cpu';
+            showScreen('game-screen');
+            updateGameStatus();
+            updateScoreboard();
+            
+            const batsmanName = gameState.currentBatsman === 'player' ? 'You' : 'CPU';
+            addCommentary(`🏏 ${batsmanName} won the toss and chose to bat first!`, true);
+            addCommentary(`🎯 First innings begins. ${batsmanName} is batting.`);
+        }
+
+        function playerChoice(number) {
+            if (gameState.gameOver) return;
+            
+            const cpuChoice = cpuAI.getChoice(gameState);
+            gameState.playerChoices.push(number);
+            
+            // Update display
+            document.getElementById('player-choice').textContent = number;
+            document.getElementById('cpu-choice').textContent = cpuChoice;
+            
+            playBall(number, cpuChoice);
+        }
+
+        function playBall(playerChoice, cpuChoice) {
+            gameState.balls++;
+            updateScoreboard();
+            
+            let commentary = '';
+            let runs = 0;
+            let isOut = false;
+            
+            if (playerChoice === cpuChoice) {
+                // OUT!
+                isOut = true;
+                commentary = `🏏 ${playerChoice} vs ${cpuChoice} - OUT! Both players chose the same number!`;
+                
+                if (gameState.currentBatsman === 'player') {
+                    gameState.playerScore.wickets++;
+                } else {
+                    gameState.cpuScore.wickets++;
+                }
+            } else {
+                // Runs scored
+                runs = gameState.currentBatsman === 'player' ? playerChoice : cpuChoice;
+                
+                if (gameState.currentBatsman === 'player') {
+                    gameState.playerScore.runs += runs;
+                } else {
+                    gameState.cpuScore.runs += runs;
+                }
+                
+                let runText = runs === 1 ? 'run' : 'runs';
+                if (runs === 4) runText = 'FOUR! 🏏';
+                if (runs === 6) runText = 'SIX! 🚀';
+                
+                commentary = `🏏 ${playerChoice} vs ${cpuChoice} - ${runs} ${runText}`;
+            }
+            
+            addCommentary(commentary);
+            
+            // Check for innings end
+            if (isOut || gameState.balls >= 60) { // Max 10 overs
+                if (gameState.innings === 1) {
+                    endFirstInnings();
+                } else {
+                    endMatch();
+                }
+            } else if (gameState.innings === 2) {
+                // Check if target achieved
+                const chasingScore = gameState.currentBatsman === 'player' ? gameState.playerScore.runs : gameState.cpuScore.runs;
+                if (chasingScore > gameState.target) {
+                    endMatch();
+                }
+            }
+            
+            updateScoreboard();
+            updateGameStatus();
+        }
+
+        function endFirstInnings() {
+            gameState.innings = 2;
+            gameState.target = gameState.currentBatsman === 'player' ? gameState.playerScore.runs : gameState.cpuScore.runs;
+            gameState.currentBatsman = gameState.currentBatsman === 'player' ? 'cpu' : 'player';
+            gameState.balls = 0;
+            
+            addCommentary(`🏁 First innings ended!`, true);
+            addCommentary(`🎯 Target set: ${gameState.target + 1} runs to win`);
+            addCommentary(`🏏 Second innings begins. ${gameState.currentBatsman === 'player' ? 'You are' : 'CPU is'} now batting.`);
+            
+            updateGameStatus();
+            updateScoreboard();
+        }
+
+        function endMatch() {
+            gameState.gameOver = true;
+            
+            let winner = '';
+            let margin = '';
+            
+            if (gameState.playerScore.runs > gameState.cpuScore.runs) {
+                winner = '🎉 You Win!';
+                margin = `by ${gameState.playerScore.runs - gameState.cpuScore.runs} runs`;
+            } else if (gameState.cpuScore.runs > gameState.playerScore.runs) {
+                winner = '🤖 CPU Wins!';
+                margin = `by ${gameState.cpuScore.runs - gameState.playerScore.runs} runs`;
+            } else {
+                winner = '🤝 It\'s a Tie!';
+                margin = 'Both teams scored equal runs';
+            }
+            
+            document.getElementById('result-title').textContent = winner;
+            document.getElementById('final-scores').innerHTML = `
+                <h3>Final Scores</h3>
+                <p>👤 You: ${gameState.playerScore.runs}/${gameState.playerScore.wickets}</p>
+                <p>🤖 CPU: ${gameState.cpuScore.runs}/${gameState.cpuScore.wickets}</p>
+                <p><strong>${margin}</strong></p>
+            `;
+            
+            showScreen('result-screen');
+            addCommentary(`🏁 Match ended! ${winner} ${margin}`, true);
+        }
+
+        function startNewGame() {
+            // Reset game state
+            gameState = {
+                phase: 'toss',
+                tossChoice: null,
+                playerBatsFirst: false,
+                innings: 1,
+                currentBatsman: 'player',
+                playerScore: { runs: 0, wickets: 0 },
+                cpuScore: { runs: 0, wickets: 0 },
+                balls: 0,
+                target: 0,
+                playerChoices: [],
+                gameOver: false
+            };
+            
+            // Reset displays
+            document.getElementById('player-choice').textContent = '?';
+            document.getElementById('cpu-choice').textContent = '?';
+            document.getElementById('toss-numbers').style.display = 'none';
+            document.getElementById('toss-result').innerHTML = '';
+            document.getElementById('target-info').style.display = 'none';
+            document.getElementById('commentary').innerHTML = '<div class="commentary-item">🏏 Game started! Win the toss first...</div>';
+            
+            showScreen('toss-screen');
+        }
+
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+            updateScoreboard();
+        });
+    </script>
+</body>
+</html>
